@@ -558,7 +558,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .gridWrapper {
   height: 695px;
   overflow: auto;
-  margin-top: 80px;
 }
 
 .information p {
