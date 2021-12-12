@@ -19,24 +19,3 @@ export const closePopUp = () => {
     }
 }
 
-
-export const openRequestPopUp = (da) => {
-    return {
-        type: "SHOW_REQUEST_POP_UP",
-        payload: da
-    }
-}
-
-export const closeRequestPopUp = () => {
-    return {
-        type: "CLOSE_REQUEST_POP_UP"
-    }
-}
-
-export const closeRequest = (id) => {
-    return {
-        type: "REMOVE_REQUEST",
-        id: id
-    }
-}
-

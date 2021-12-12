@@ -13,15 +13,15 @@ const Header = ({ title }) => {
         <div className="headerWrapper">
             <div className={active ? "menu active" : "menu"} onBlur={() => console.log("A")}>
                 <div className="toggle" >
-                    <Icon icon="carbon:add" onClick={() => setActive(!active)} />
+                    <Icon icon={active ? "ant-design:menu-fold-outlined" : "ant-design:menu-unfold-outlined"} onClick={() => setActive(!active)} />
                 </div>
                 <li style={{ "--i": 0 }} onMouseEnter={() => setHover({ ...hover, hover1: true })} onMouseLeave={() => setHover({ ...hover, hover1: false })}>
                     <Link to="/dashboard" >
-                        <Icon icon="carbon:dashboard" />
+                        <Icon icon="fa-solid:border-all" />
                     </Link>
                 </li>
                 <div className="explanation" style={hover.hover1 ? { left: "135px", position: "absolute", display: "block" } : { display: "none" }}>
-                    Dashboard
+                    All Events
                 </div>
                 <li style={{ "--i": 1 }} onMouseEnter={() => setHover({ ...hover, hover2: true })} onMouseLeave={() => setHover({ ...hover, hover2: false })}>
                     <Link to="/createEvent" >

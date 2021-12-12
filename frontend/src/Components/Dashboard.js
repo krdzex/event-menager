@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { deleteEvent, listEvents, listEventsByCategorie, listEventsByUser, sendRequest } from '../ApiService/eventApi';
+import { deleteEvent, listEvents, listEventsByCategorie, listEventsByUser, makeDecision, sendRequest } from '../ApiService/eventApi';
 import Header from './Header';
 import moment from "moment"
 import authHelper from '../Auth/authHelper';
 import { Icon } from '@iconify/react';
 import { io } from 'socket.io-client';
 import { userInfo } from '../ApiService/userApi';
-import { closePopUp, closeRequestPopUp, openPopUp, openRequestPopUp } from '../Actions';
+import { closePopUp, openPopUp } from '../Actions';
 import { useDispatch } from 'react-redux';
 const Dashboard = () => {
 
     const [events, setEvents] = useState([])
+    const [requests, setRequests] = useState([])
     const [categorie, setCategorie] = useState("")
     const [socket] = useState(() => io("localhost:4400"));
     const dispatch = useDispatch()
@@ -20,22 +21,16 @@ const Dashboard = () => {
     }, [socket])
 
     const reciveMessage = useCallback((data) => {
-        dispatch(openRequestPopUp(data))
-    }, [dispatch]);
+        setRequests(prevState => [...prevState, data])
+    }, [requests]);
 
-    useEffect(() => {
-        return () => {
-            dispatch(closeRequestPopUp())
-        }
-    }, [])
 
 
     useEffect(() => {
-
         socket?.off("recive_request").on('recive_request', data => {
             reciveMessage(data)
         })
-    })
+    }, [socket])
 
     const onRequestClick = async (data) => {
 
@@ -143,8 +138,31 @@ const Dashboard = () => {
             dispatch(closePopUp())
         }, 3000);
     }
+    const onDecisionClick = async (data, status, id) => {
+        let result = await makeDecision(data.eventId, { whoRequest: data.whoIsRequestingId, newStatus: status })
+        let newRequests = requests.filter((request, requestId) => requestId !== id)
+        setRequests(newRequests)
+    }
+
+
     return (
         <div className="dashBoardWrapper">
+            {requests.length > 0 && (<div className="requestsWrapper">
+                {requests.map((request, id) => (
+                    <div key={id} className="requestCardInfo">
+                        <div className="information">
+                            <p>{request.whoRequest} is requesting to register to your event {request.titleOfEvent}</p>
+                        </div>
+                        <div className="requestButtons" onClick={() => onDecisionClick(request, "Approve", id)}>
+                            <div className="add" >
+                                Accept
+                            </div>
+                            <div className="decline" onClick={() => onDecisionClick(request, "Denied", id)}>
+                                Reject
+                            </div>
+                        </div>
+                    </div>
+                ))}</div>)}
             <div className="mainWrapper shadow">
                 <div className="filter">
                     <input type="text" list="categorie" placeholder="Filter" onMouseDown={() => setCategorie("")} value={categorie} onKeyDown={(event) => {
@@ -166,13 +184,15 @@ const Dashboard = () => {
                                     <img src={process.env.PUBLIC_URL + `/images/${event.img}`} alt="img"></img>
                                 </div>
                                 <div className="eventDetails">
-                                    <h2 className="eventTitle">
-                                        {event.title}
-                                    </h2>
-                                    <div className="eventInformations">
-                                        <p>Event Date: {event.eventDate}</p>
-                                        <p>Event Price: {event.eventPrice} BAM</p>
-                                        <p>Event Description: {event.eventDescription}</p>
+                                    <div className="eventInfoWrapper">
+                                        <h2 className="eventTitle">
+                                            {event.title}
+                                        </h2>
+                                        <div className="eventInformations">
+                                            <p>Event Date: {event.eventDate}</p>
+                                            <p>Event Price: {event.eventPrice} BAM</p>
+                                            <p>Event Description: {event.eventDescription}</p>
+                                        </div>
                                     </div>
                                     {event.author === authHelper.isAuthentcated().user._id ? "" : event?.status ? <div className={"statusDiv " + event.status.toLowerCase()}>
                                         {event.status}
